@@ -1,0 +1,54 @@
+---
+- name: Install Nginx
+  apt:
+    name: nginx
+    state: "{{ nginx_version }}"
+  
+- name: Create site directory
+  file:
+    path: "/var/www/{{ site_name }}"
+    state: directory
+    mode: '0755'
+
+- name: Deploy Nginx config
+  template:
+    src: nginx-site.conf.j2
+    dest: "/etc/nginx/sites-available/{{ site_name }}.conf"
+  notify: Validate and restart Nginx
+
+- name: Enable site
+  file:
+    src: "/etc/nginx/sites-available/{{ site_name }}.conf"
+    dest: "/etc/nginx/sites-enabled/{{ site_name }}.conf"
+    state: link
+
+- name: Remove default Nginx site
+  file:
+    path: "/etc/nginx/sites-enabled/default"
+    state: absent
+  notify: Restart Nginx
+
+- name: Deploy index.html
+  template:
+    src: index.html.j2
+    dest: "/var/www/{{ site_name }}/index.html"#SPDX-License-Identifier: MIT-0
+
+- name: Remove old broken configs
+  file:
+    path: "/etc/nginx/sites-enabled/{{ item }}"
+    state: absent
+  with_items:
+    - "My Cool Website.conf"
+    - default
+  ignore_errors: yes
+  notify: Restart Nginx
+
+- name: Ensure old configs are removed
+  file:
+    path: "{{ item }}"
+    state: absent
+  with_items:
+    - "/etc/nginx/sites-enabled/default"
+    - "/etc/nginx/sites-available/default"
+    - "/etc/nginx/sites-enabled/My Cool Website.conf"
+  ignore_errors: yes

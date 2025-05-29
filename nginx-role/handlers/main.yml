@@ -1,0 +1,13 @@
+---
+- name: Validate and restart Nginx
+  block:
+    - name: Validate Nginx configuration
+      command: nginx -t
+      register: nginx_test
+      changed_when: false
+
+    - name: Restart Nginx if config is valid
+      service:
+        name: nginx
+        state: restarted
+      when: nginx_test.rc == 0

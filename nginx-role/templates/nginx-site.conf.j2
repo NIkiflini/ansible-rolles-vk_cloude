@@ -1,0 +1,10 @@
+server {
+    listen {{ nginx_port }};
+    server_name {{ site_name }};
+    root /var/www/{{ site_name | replace(' ', '-') }};
+    index index.html;
+
+    location / {
+        try_files $uri $uri/ =404;
+    }
+}

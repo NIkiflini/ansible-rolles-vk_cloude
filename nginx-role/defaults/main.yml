@@ -1,0 +1,4 @@
+---
+# Default variables for nginx-role
+site_name: "my-website"
+nginx_port: 80
